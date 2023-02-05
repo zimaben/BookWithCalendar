@@ -1,0 +1,83 @@
+name: Deploy to AWS Staging
+
+on: [push, workflow_dispatch]
+
+env: 
+  PLUGIN_NAME: BookWithCalendar
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Configure SSH
+        run: |
+          mkdir -p 700 ~/.ssh/
+          echo "$SSH_KEY" > ~/.ssh/staging.cer        
+          chmod 600 ~/.ssh/staging.cer
+          ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+          cat -v >>~/.ssh/config <<END
+          Host staging
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/staging.cer
+            PubKeyAuthentication yes
+            IdentitiesOnly yes
+            StrictHostKeyChecking no
+          END
+        env:
+          SSH_USER: ${{ secrets.STAGING_USER }}
+          SSH_KEY: ${{ secrets.STAGING_SSH }}
+          SSH_HOST: ${{ secrets.STAGING_SSH_IP }}
+          
+      - name: Zip Plugin
+             
+        run: |
+              cd $GITHUB_WORKSPACE/..
+              echo "GITHUB_WORKSPACE: ${GITHUB_WORKSPACE}"
+              echo "$PWD"
+              # zip up the source
+              zip -r /var/tmp/plugin.zip $PLUGIN_NAME
+# If I were top level I would use exclude flags for git ( -x '*.git*' )
+
+      - name: Check Deploy plugins Folder Exists
+        env: 
+          DEPLOY_DIR: ~/deploy-from-github
+          PLUGIN_PATH: /opt/bitnami/apps/wordpress/htdocs/wp-content
+        run: ssh staging "cd $DEPLOY_DIR;if [[ ! -d plugins ]]; then mkdir plugins; fi"      
+# This only copies plugins file - For non Q repos where theme is used we will need to zip & copy that too
+      - name: Copy Files
+        env: 
+          DEPLOY_DIR: ~/deploy-from-github
+          PLUGIN_PATH: /opt/bitnami/apps/wordpress/htdocs/wp-content
+        run: scp /var/tmp/plugin.zip staging:$DEPLOY_DIR/plugins
+        
+      - name: Unzip Plugin to deploy Directory
+        env: 
+          DEPLOY_DIR: ~/deploy-from-github
+          PLUGIN_PATH: /opt/bitnami/apps/wordpress/htdocs/wp-content/plugins
+        run: ssh staging "cd $DEPLOY_DIR/plugins; unzip -o plugin.zip"
+        
+      - name: Zip Previous Plugin Folder to Backups
+        env: 
+          PLUGIN_PATH: /opt/bitnami/apps/wordpress/htdocs/wp-content/plugins
+          DEPLOY_DIR: ~/deploy-from-github
+        run: ssh staging "if [[ -f $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip ]]; then rm -f $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip; fi;cd $PLUGIN_PATH; zip -r $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip $PLUGIN_NAME;"
+        
+      - name: Delete Plugin Folder from Application
+        env: 
+          PLUGIN_PATH: /opt/bitnami/apps/wordpress/htdocs/wp-content/plugins
+          DEPLOY_DIR: ~/deploy-from-github
+        run: ssh staging "if [[ -f $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip ]]; then cd $PLUGIN_PATH; sudo rm -r -f $PLUGIN_NAME; fi"
+        
+      - name: Move New Plugin Folder to Application
+        env: 
+          DEPLOY_DIR: ~/deploy-from-github
+          PLUGIN_PATH: /opt/bitnami/apps/wordpress/htdocs/wp-content/plugins
+        run: ssh staging "if [[ ! -d $PLUGIN_PATH/$PLUGIN_NAME ]]; then cd $DEPLOY_DIR; mv -f plugins/$PLUGIN_NAME $PLUGIN_PATH; fi"
+      
+      - name: Reset Folder Permissions
+        env: 
+          PLUGIN_PATH: /opt/bitnami/apps/wordpress/htdocs/wp-content/plugins
+        run: ssh staging "cd $PLUGIN_PATH; sudo chown -R bitnami:daemon $PLUGIN_NAME;sudo find $PLUGIN_NAME -type d -exec chmod 775 {} \;sudo find $PLUGIN_NAME -type f -exec chmod 664 {} \;"
