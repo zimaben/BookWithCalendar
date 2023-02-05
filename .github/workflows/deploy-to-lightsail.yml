@@ -52,8 +52,8 @@ jobs:
 
         run: ssh staging "cd $DEPLOY_DIR/plugins; unzip -o plugin.zip"
         
-      # - name: Zip Previous Plugin Folder to Backups
-      #   run: ssh staging "if [[ -f $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip && -f $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip ]]; then rm -f $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip; fi;cd $PLUGIN_PATH; zip -r $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip $PLUGIN_NAME;"
+      - name: Zip Previous Plugin Folder to Backups
+        run: ssh staging "if [[ -f $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip && -f $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip ]]; then rm -f $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip; fi;cd $PLUGIN_PATH; zip -r $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip $PLUGIN_NAME;"
         
       - name: Delete Plugin Folder from Application
         run: ssh staging "if [[ -f $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip ]]; then cd $PLUGIN_PATH; sudo rm -r -f $PLUGIN_NAME; fi"
