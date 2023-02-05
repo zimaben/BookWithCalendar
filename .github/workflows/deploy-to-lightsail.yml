@@ -40,7 +40,7 @@ jobs:
               echo "$PWD"
               # zip up the source
               zip -r /var/tmp/$PLUGIN_NAME.zip $PLUGIN_NAME
-# If I were top level I would use exclude flags for git ( -x '*.git*' )
+
 
       - name: Check Deploy plugins Folder Exists
         run: ssh staging "cd $DEPLOY_DIR;if [[ ! -d plugins ]]; then mkdir plugins; fi"      
@@ -56,7 +56,12 @@ jobs:
         run: ssh staging "if [[ -f $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip && -f $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip ]]; then rm -f $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip; fi;cd $PLUGIN_PATH; zip -r $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip $PLUGIN_NAME;"
 
       - name: Check Deploy Directory
-        run: ssh staging "if [[! -d $DEPLOY_DIR ]]; then mkdir $DEPLOY_DIR; fi; | cd $DEPLOY_DIR; if [[ ! -d plugins ]]; then mkdir plugins; fi; | if [[ ! -d backups ]]; then mkdir backups; fi;"     
+        run: |
+         ssh staging "
+         if [[! -d $DEPLOY_DIR ]]; then mkdir $DEPLOY_DIR; fi;
+         cd $DEPLOY_DIR; 
+         if [[ ! -d plugins ]]; then mkdir plugins; fi;
+         if [[ ! -d backups ]]; then mkdir backups; fi;"    
     
       - name: Delete Plugin Folder from Application
         run: ssh staging "if [[ -f $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip ]]; then cd $PLUGIN_PATH; sudo rm -r -f $PLUGIN_NAME; fi"
