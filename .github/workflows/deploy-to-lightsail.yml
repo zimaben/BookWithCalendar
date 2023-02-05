@@ -63,7 +63,7 @@ jobs:
         env: 
           PLUGIN_PATH: /opt/bitnami/apps/wordpress/htdocs/wp-content/plugins
           DEPLOY_DIR: ~/deploy-from-github
-        run: ssh staging "if [[ -f $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip ]]; then rm -f $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip; fi;cd $PLUGIN_PATH; zip -r $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip $PLUGIN_NAME;"
+        run: ssh staging "if [[ -f $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip && -f $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip ]]; then rm -f $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip; fi;cd $PLUGIN_PATH; zip -r $DEPLOY_DIR/backups/$PLUGIN_NAME-lastrun.zip $PLUGIN_NAME;"
         
       - name: Delete Plugin Folder from Application
         env: 
