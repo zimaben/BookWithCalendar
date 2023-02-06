@@ -8,6 +8,7 @@ require_once Plugin::get_plugin_path() . 'sdk/vendor/autoload.php';
 class CalendarClient {
         public $err = false;
         public $permission_granted = false;
+        public $token = false;
         #set scopes here
         private $scopes = array(                
             'https://www.googleapis.com/auth/plus.me', 
@@ -17,7 +18,7 @@ class CalendarClient {
             'https://www.googleapis.com/auth/calendar.readonly'
         );
     public function __construct(){
-        $this->client = new Google\Client();
+        $this->client = new Google_Client();
         $this->setClientID();
         $this->setClientSecret();
         $this->setDeveloperKey();
@@ -25,15 +26,14 @@ class CalendarClient {
         $this->client->setApplicationName("WPToGoogleCalendar");
         $this->client->setScopes( $this->scopes );
         $this->client->setRedirectUri( \admin_url() . '?page=rbtgc_options');
+        $this->client->setAccessType('offline');
         $this->calendar = !$this->err ? $this->getCalendar() : false;
-        error_log(print_r($this, true));
     }
     private function getCalendar(){
-        $calendar = new Google\Service\Calendar($this->client);
-
         if (isset($_GET['logout'])) {
             unset($_SESSION['token']);
         }
+
         if (isset($_GET['code'])) {
             $this->client->authenticate($_GET['code']);
             $_SESSION['token'] = $this->client->getAccessToken();
@@ -44,12 +44,21 @@ class CalendarClient {
         }
         if( $this->client->getAccessToken()) { 
             $this->permission_granted = true;
-        } 
+            $calendar = new Google_Service_Calendar($this->client);
+            return $calendar;
+        } else {
+            return false;
+        }
+
     }
     private function startSession(){
         if (!isset($_SESSION) ) {
-            session_start();
+            session_start(); //starts a session
         } 
+        // Set the refresh token on the client.	
+		if (isset($_SESSION['refresh_token']) && $_SESSION['refresh_token']) {
+			$this->client->refreshToken($_SESSION['refresh_token']);
+		}
     }
     private function setClientID(){
         $clientid = \get_option( 'rbtgc_client_id');
