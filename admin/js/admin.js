@@ -62,6 +62,37 @@ function remove_calendar(event){
         let sendbody = '&calendar=' + encodeURIComponent(calendar) + '&nonce=' + encodeURIComponent(nonce);
         sendit(location, sendbody).then( (r) => {
             let parent = event.target.closest('.parent');
+            let response = parent.querySelector('.response');
+            if(r.status === 200){
+                if(response){
+                    response.className = '';
+                    response.classList.add('success')
+                    response.innerHTML = r.payload;
+                }
+            } else {
+                if(response) {
+                    response.className = '';
+                    response.classList.add('error')
+                    response.innerHTML = r.payload;
+                }
+            }
+        })
+
+    } else {
+        if(response) response.innerHTML = 'Form Error: Please log in again';
+    }
+}
+function link_calendar(event){
+    console.log("doing link_calendar");
+    event.preventDefault();
+    let location = rbtgc.ajaxurl + '?action=rbtgc_link_calendar';
+    let nonce = rbtgc.nonce;
+    let calendar = document.querySelector('input[name="link_calendar"]');
+    if(calendar && nonce){
+        let sendbody = '&calendar=' + encodeURIComponent(calendar.value) + '&nonce=' + encodeURIComponent(nonce);
+        sendit(location, sendbody).then( (r) => {
+            let parent = event.target.closest('.parent');
+            let response = parent.querySelector('.response');
             if(r.status === 200){
                 if(response){
                     response.className = '';
@@ -91,6 +122,33 @@ function set_timezone(event){
     if(response) response.innerHTML = '';
     if(timezone && nonce){
         let sendbody = '&timezone=' + encodeURIComponent(timezone) + '&nonce=' + encodeURIComponent(nonce);
+        sendit(location, sendbody).then( (r) => {
+            if(r.status === 200){
+                
+                if(response){
+                    response.className = '';
+                    response.classList.add('success')
+                    response.innerHTML = r.payload;
+                }
+            } else {
+                if(response) {
+                    response.className = '';
+                    response.classList.add('error')
+                    response.innerHTML = r.payload;
+                }
+            }
+        })
+    } else {
+        if(response) response.innerHTML = 'Form Error: Please log in again';
+    }
+}
+function test_features(event){
+    console.log("Testing features");
+    event.preventDefault();
+    let location = rbtgc.ajaxurl + '?action=rbtgc_test_features';
+    let nonce = rbtgc.nonce;
+    if(nonce){
+        let sendbody ='&nonce=' + encodeURIComponent(nonce);
         sendit(location, sendbody).then( (r) => {
             if(r.status === 200){
                 

@@ -8,5 +8,11 @@ addEventListener('DOMContentLoaded', () => {
     if(removecalendar){
         for(let r of removecalendar) r.addEventListener('click', (event) =>{ remove_calendar(event)});
     }
+    let linkcalendar = document.getElementById('linkcalendar');
+    if(linkcalendar) linkcalendar.addEventListener('click', (event) =>{ link_calendar(event)});
+    /* TEMP @ToDo Delete when done testing */
+    let dotest = document.getElementById('testingfeatures');
+    if(dotest) dotest.addEventListener('click', (event) => { test_features(event)});
+    
 
 })

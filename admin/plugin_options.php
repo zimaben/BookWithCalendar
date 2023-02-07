@@ -76,6 +76,7 @@ class PluginOptions {
     }
 
     private static function render_step_two(){
+        require_once Plugin::get_plugin_path() . 'admin/model.php';
         require_once Plugin::get_plugin_path() . 'sdk/Client.php';
         $Client = new \CalendarClient();
         $maxCals = 4;
@@ -111,19 +112,32 @@ class PluginOptions {
                 <form>
                     <ul>
                     <?php 
-                    $next_cal_number = 1;
-                    for($i=1; $i<$maxCals; $i++){
-                        $check = \get_option( 'rbgc_calendar_' . $i);
-                        if($check){echo '<li class="parent">'.$check.' <div class="response"></div><button type="button" class="removecalendar" data-calendar"rbgc_calendar_'. $i . '">Remove this Calendar</button></li>'; $next_cal_number = $i + 1;}
+
+                    for($i=1; $i < Model::MAXCALENDARS; $i++){
+                        $check = \get_option( 'rbtgc_calendar_' . $i);
+                        if($check){
+                            $name = \get_option( 'rbtgc_calendar_' . $i . '_name');
+                            $id = \get_option( 'rbtgc_calendar_' . $i . '_id');
+                            echo '<li class="parent">'.$name.' <div class="response"></div><button type="button" class="removecalendar" data-calendar="'. $id .'">Remove Calendar</button></li>';
+                        }
                     }
+                    $next_cal_number = Model::next_free_cal_number();
                     ?>
                     </ul>
                     <div class="parent">
                         <div class="response"></div>
-                        <input type="text" name="calendar_<?php echo $next_cal_number ?>" /> 
-                        <button type="button" id="addcalendar" data-cal-number="<?php echo $next_cal_number ?>">Add Calendar</button>
+                        <input type="text" name="calendar_<?php echo $next_cal_number ?>" placeholder="New Calendar Name" /> 
+                        <button type="button" id="addcalendar" data-cal-number="<?php echo $next_cal_number ?>">Add New Calendar</button>
+                    </div>
+                    <div class="parent">
+                        <div class="description">Link the plugin to an existing calendar. Follow these instructions to get your Google Calendar ID: <a href="https://docs.simplecalendar.io/find-google-calendar-id/" target="_blank">find your Google Calendar ID</a></div>
+                        <div class="response"></div>
+                        <input type="text" name="link_calendar" id="link_calendar" placeholder="Linked Calendar ID" /> 
+                        <button type="button" id="linkcalendar" data-cal-number="<?php echo $next_cal_number ?>">Link Calendar</button>
                     </div>
                 </form>
+                <br>
+                <button type="button" id="testingfeatures">Do Current Test</button>
             </div>
             <?php
         }

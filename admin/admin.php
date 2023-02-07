@@ -19,31 +19,8 @@ class PluginAdmin extends Plugin {
         \wp_localize_script( 'rbtgc_admin', 'rbtgc', $data );
       
     }
-    public static function get_calendars(){
-        global $wpdb;
-        $option_name = 'rbtc_calendar_%';
-        $results = $wpdb->get_results( 
-                $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}options WHERE option_name LIKE =%s", $option_name )
-        );
-        error_log("RESULTS");
-        error_log(print_r($results, true));
-        return $results;
-    }
-    public static function get_next_cal_number(){
-        $max = 4;
-        $gaps = array();
-        $unset = array();
-        $count = 0;
-        for($i = 1;$i<$max;$i++){
-            $check = \get_option('rbtgc_calendar_' . $i);
-            if($check){
-                $count++;
-            } else {
-                array_push($unset, $i);
-            }
-            
-        }
-    }
+
+
     
 }
 PluginAdmin::run();
