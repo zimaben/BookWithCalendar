@@ -28,13 +28,21 @@ class Model extends Plugin {
     }
     public static function get_calendars(){
         global $wpdb;
-        $option_name = 'rbtc_calendar_';
+        $option_name = 'rbtgc_calendar_';
+        $returnarray = array();
         $results = $wpdb->get_results( 
-                $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}options WHERE option_name LIKE =%s", $wpdb->esc_like($option_name  . '%%') )
+                $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}options WHERE option_name LIKE %s;", $option_name . '%_id' )
         );
-        error_log("RESULTS");
         error_log(print_r($results, true));
-        return $results;
+        foreach($results as $idx => $result){
+            $key = str_replace('_id', '', $result->option_name);
+            $namekey = str_replace('_id', '_name', $result->option_name);
+            $returnarray[$key] = array(
+                'id' => $result->option_value,
+                'name'=> \get_option( $namekey )
+            );
+        }
+        return $returnarray;
     }
 
     public static function next_free_cal_number(){

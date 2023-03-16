@@ -44,33 +44,35 @@ class PluginAjax extends Plugin {
         $Client = new \CalendarClient();
         if($Client->err) self::return_false( $Client->err );
         require_once Plugin::get_plugin_path() . 'sdk/Calendar.php';
-        $Cal = new \GCalendar($Client->client, $Client->calendar);
+        $Cal =\GCalendar::get_instance($Client->client, $Client->calendar);
         /* boilerplate end */
         require_once Plugin::get_plugin_path() . 'admin/model.php';
 
-        #4 hour version
-        $startTime = new \DateTimeImmutable('2023-02-08 08:00');
-        $endTime = $startTime->add( new \DateInterval("PT4H"));
-        $TimeZone = $Cal->getTimeZone();
-        $CalId = 'm55qqs0bi4or2iu8anfov3kuko@group.calendar.google.com';
-        $newEvent = array(
-            'summary' => 'Half Day Driver Appointment',
-            'description' => 'Any Additional Description goes here',
-            'location' => 'Ngurah Rai Airport',
-            'start' => array('dateTime'=> $startTime->format(\DateTime::ATOM), 'timeZone'=> $TimeZone),
-            'end' => array('dateTime'=> $endTime->format(\DateTime::ATOM), 'timeZone'=> $TimeZone),
-            'attendees' => array(
-                array('email' => 'lpage@example.com'),
-                array('email' => 'sbrin@example.com'),
-              ),
-            'reminders' => array('useDefault' => TRUE),
-        );
-        #Add Event
-        $event = new \Google_Service_Calendar_Event( $newEvent );
-        $addevent = $Cal->calendar->events->insert($CalId, $event);
+        #new event using function    public function newEvent($StartTimeString = null, $DurationInMinutes = null, $CalendarId = null, $arguments = array() ){
+        $arguments['Name'] = 'Drive to Nusa Dua';
+        $arguments['Location'] = 'Pink Coco Hotel';
+        $arguments['UserEmail'] = 'test@example.com';
+
+        $startTime = '2023/02/09 12:01:00';
+        $endTime = '2023/02/09 16:00:00';
+        // $Cal_ID =  'm55qqs0bi4or2iu8anfov3kuko@group.calendar.google.com'; //brio
+        // $Cal_ID = 'icv7dskmnnadps7c2ub9chu8k4@group.calendar.google.com'; //avanza
+
+        #CheckCalendars returns the ID of the first free calendar in the order of Google Calendar. It returns false if there are no free calendars
+        $Cal_ID = $Cal->checkCalendarsFree($startTime, 240); //checkCalendarsFree takes duration as the second argument like newEvent
+        if($Cal_ID) {
+            error_log($Cal_ID);
+            $Cal->newEvent($startTime, 240, $Cal_ID, $arguments);
+           self::return_true("booked new event");
+        } else {
+            self::return_false("That time is already booked");
+        }
+        self::return_true("testsstsings");
+
     }
 
     public static function rbtgc_add_calendar(){
+        /* tested */
         /* boilerplate */
         $check = self::checkrequest( __FUNCTION__ );
         require_once Plugin::get_plugin_path() . 'admin/model.php';
@@ -81,7 +83,7 @@ class PluginAjax extends Plugin {
         $Client = new \CalendarClient();
         if($Client->err) self::return_false( $Client->err );
         require_once Plugin::get_plugin_path() . 'sdk/Calendar.php';
-        $Cal = new \GCalendar($Client->client, $Client->calendar);
+        $Cal = \GCalendar::get_instance($Client->client, $Client->calendar);
         /* boilerplate end */
         
         
@@ -96,7 +98,7 @@ class PluginAjax extends Plugin {
     }
 
     public static function rbtgc_link_calendar(){
-        error_log("DOING LINK CALENDAR SERVER");
+        /* tested */
         /* boilerplate */
         $check = self::checkrequest( __FUNCTION__ );
         require_once Plugin::get_plugin_path() . 'admin/model.php';
@@ -107,7 +109,7 @@ class PluginAjax extends Plugin {
         $Client = new \CalendarClient();
         if($Client->err) self::return_false( $Client->err );
         require_once Plugin::get_plugin_path() . 'sdk/Calendar.php';
-        $Cal = new \GCalendar($Client->client, $Client->calendar);
+        $Cal = \GCalendar::get_instance($Client->client, $Client->calendar);
         /* boilerplate end */
         
         $CalendarName = $Cal->getCalendarName( $_POST['calendar'] );
@@ -121,6 +123,7 @@ class PluginAjax extends Plugin {
     }
     
     public static function  rbtgc_remove_calendar(){
+        /* tested */
         /* boilerplate */
         $check = self::checkrequest( __FUNCTION__ );
         require_once Plugin::get_plugin_path() . 'admin/model.php';
@@ -138,6 +141,7 @@ class PluginAjax extends Plugin {
         }
     }
     public static function rbtgc_set_timezone(){
+        /* tested */
         $check = self::checkrequest( __FUNCTION__ );
         $newTZ = $_POST['timezone'];
         if( \update_option('rbtgc_timezone', $newTZ) ){

@@ -137,7 +137,10 @@ class PluginOptions {
                     </div>
                 </form>
                 <br>
-                <button type="button" id="testingfeatures">Do Current Test</button>
+                <div class="parent">
+                    <div class="response"></div>
+                    <button type="button" id="testingfeatures">Do Current Test</button>
+                </div>
             </div>
             <?php
         }

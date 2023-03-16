@@ -31,9 +31,8 @@ class CalendarClient {
             'https://www.googleapis.com/auth/calendar.freebusy'
         );
     public function __construct(){
-        session_start();
+        if(session_status() !== PHP_SESSION_ACTIVE) session_start();
         $this->client = new Google_Client();
-       // $this->client->setAuthConfig( Plugin::get_plugin_path() . 'sdk/client_secret_741701277318-b04uro3lssiaoqonv5ar5432dqhrn55n.apps.googleusercontent.com.json');
         $this->setClientID();
         $this->setClientSecret();
         $this->setDeveloperKey();
@@ -48,11 +47,19 @@ class CalendarClient {
         $this->calendar = !$this->err ? $this->getCalendar() : false;
 
     }
+    private function checkClientEmail($calendar){
+        #store email once
+        if( !\get_option('rbtgc_client_email')){
+            $CalendarEmailAddress = $calendar->calendars->get('primary')->id;
+            \update_option('rbtgc_client_email', $CalendarEmailAddress);
+        }
+    }
     private function getCalendar(){
 
         if( $this->client->getAccessToken()) { 
             $this->permission_granted = true;
             $calendar = new Google_Service_Calendar($this->client);
+            if($calendar) $this->checkClientEmail($calendar);
             return $calendar;
         } else {
             $expired = $this->client->isAccessTokenExpired();
@@ -66,6 +73,7 @@ class CalendarClient {
                 if($this->client->getAccessToken() ){
                     $this->permission_granted = true;
                     $calendar = new Google_Service_Calendar($this->client);
+                    if($calendar) $this->checkClientEmail($calendar);
                     return $calendar;
                 }
             } else {

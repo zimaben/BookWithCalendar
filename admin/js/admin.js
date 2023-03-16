@@ -36,13 +36,13 @@ function add_calendar(event){
         sendit(location, sendbody).then( (r) => {           
             if(r.status === 200){         
                 if(response){
-                    response.className = '';
+                    response.className = 'response';
                     response.classList.add('success')
                     response.innerHTML = r.payload;
                 }
             } else {
                 if(response) {
-                    response.className = '';
+                    response.className = 'response';
                     response.classList.add('error')
                     response.innerHTML = r.payload;
                 }
@@ -65,13 +65,13 @@ function remove_calendar(event){
             let response = parent.querySelector('.response');
             if(r.status === 200){
                 if(response){
-                    response.className = '';
+                    response.className = 'response';
                     response.classList.add('success')
                     response.innerHTML = r.payload;
                 }
             } else {
                 if(response) {
-                    response.className = '';
+                    response.className = 'response';
                     response.classList.add('error')
                     response.innerHTML = r.payload;
                 }
@@ -95,13 +95,13 @@ function link_calendar(event){
             let response = parent.querySelector('.response');
             if(r.status === 200){
                 if(response){
-                    response.className = '';
+                    response.className = 'response';
                     response.classList.add('success')
                     response.innerHTML = r.payload;
                 }
             } else {
                 if(response) {
-                    response.className = '';
+                    response.className = 'response';
                     response.classList.add('error')
                     response.innerHTML = r.payload;
                 }
@@ -126,13 +126,13 @@ function set_timezone(event){
             if(r.status === 200){
                 
                 if(response){
-                    response.className = '';
+                    response.className = 'response';
                     response.classList.add('success')
                     response.innerHTML = r.payload;
                 }
             } else {
                 if(response) {
-                    response.className = '';
+                    response.className = 'response';
                     response.classList.add('error')
                     response.innerHTML = r.payload;
                 }
@@ -147,19 +147,22 @@ function test_features(event){
     event.preventDefault();
     let location = rbtgc.ajaxurl + '?action=rbtgc_test_features';
     let nonce = rbtgc.nonce;
+    let parent = event.target.closest('.parent');
+    let response = parent ? parent.querySelector('.response') : false;
+    if(response) response.innerHTML = '';
     if(nonce){
         let sendbody ='&nonce=' + encodeURIComponent(nonce);
         sendit(location, sendbody).then( (r) => {
             if(r.status === 200){
                 
                 if(response){
-                    response.className = '';
+                    response.className = 'response';
                     response.classList.add('success')
                     response.innerHTML = r.payload;
                 }
             } else {
                 if(response) {
-                    response.className = '';
+                    response.className = 'response';
                     response.classList.add('error')
                     response.innerHTML = r.payload;
                 }
